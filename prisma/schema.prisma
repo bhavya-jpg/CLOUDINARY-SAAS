@@ -26,5 +26,13 @@ model Video{
   userId String // Add userId to link videos to users
   createdAt DateTime @default(now())
   updatedAt DateTime@updatedAt
-
+  
+  // AI-powered preview and quality options
+  aiPreviewUrl String? // AI-generated preview with key moments
+  thumbnailUrl String? // Optimized thumbnail
+  highQualityUrl String? // High-quality compressed version
+  originalQualityUrl String? // Original quality version
+  keyMoments String[] // Array of timestamps for key moments
+  compressionRatio Float? // Compression ratio (0-1)
+  previewDuration Int? // Duration of AI preview in seconds
 }

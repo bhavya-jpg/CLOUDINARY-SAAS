@@ -24,10 +24,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="en">
+    <ClerkProvider
+      // Ensure Clerk redirects to /home after sign-in/up by default
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      signInFallbackRedirectUrl="/home"
+      signUpFallbackRedirectUrl="/home"
+      afterSignInUrl="/home"
+      afterSignUpUrl="/home"
+    >
+      <html lang="en" data-theme="night" className="dark">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-neutral-950 text-neutral-100`}
         >
           {children}
         </body>

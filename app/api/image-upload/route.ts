@@ -5,7 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 // Configuration
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUADINARY_API_KEY,
+  api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET, // Click 'View API Keys' above to copy your API secret
 });
 
@@ -26,6 +26,14 @@ export async function POST(request: NextRequest) {
     const file = formData.get("file") as File | null;
     if (!file) {
       return NextResponse.json({ error: "File not found" }, { status: 400 });
+    }
+
+    // Check file size (1GB limit)
+    const MAX_FILE_SIZE = 1 * 1024 * 1024 * 1024;
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ 
+        error: "File size too large. Maximum size is 1GB." 
+      }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();

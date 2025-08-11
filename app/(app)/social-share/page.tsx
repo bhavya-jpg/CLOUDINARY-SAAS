@@ -78,52 +78,37 @@ export default function Socialshare() {
   };
 
   return (
-    <div className="bg-gray-900">
-      <div className="container mx-auto p-4 max-w-4xl">
-        <h1 className="text-3xl font-bold mb-6 text-center text-amber-50">
-          Social Media Image Creator
-        </h1>
-        <style jsx global>{`
-          body {
-            background-color: #1f2937; /* Tailwind's gray-800 */
-          }
-        `}</style>
-        <div className="card">
-          <div className="card-body">
-            <h2 className="card-title mb-4 text-amber-50">Upload an Image</h2>
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text text-gray-300">
-                  Choose an image file
-                </span>
-              </label>
+    <div className="max-w-7xl mx-auto w-full p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Social Share</h1>
+          <p className="text-base-content/70">Create on-brand assets for Instagram, X, Facebook and more.</p>
+        </div>
+        <a className="btn btn-outline" href="/home">Back to Library</a>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1">
+          <div className="card bg-base-100 border border-base-300 shadow-sm">
+            <div className="card-body gap-4">
+              <div>
+                <h2 className="card-title">Upload an image</h2>
+                <p className="text-base-content/70 text-sm">PNG or JPG. Max 1GB.</p>
+              </div>
               <input
                 type="file"
                 onChange={handleFileUpload}
-                className="file-input w-full bg-gray-800 border-2 border-purple-400 text-white h-12 min-h-12 font-medium rounded-lg file:bg-purple-400 file:text-black file:border-0 file:h-12 file:min-h-12 file:font-medium file:rounded-lg file:px-4 file:cursor-pointer"
+                className="file-input file-input-bordered w-full"
               />
-            </div>
+              {isUploading && <progress className="progress w-full"></progress>}
 
-            {isUploading && (
-              <div className="mt-4">
-                <progress className="progress w-full bg-gray-700 h-4 rounded-lg overflow-hidden">
-                  <div className="w-full h-full bg-purple-500 animate-pulse"></div>
-                </progress>
-              </div>
-            )}
-
-            {uploadedImage && (
-              <div className="mt-6">
-                <h2 className="card-title mb-4 text-amber-50">
-                  Select Social Media Format
-                </h2>
+              {uploadedImage && (
                 <div className="form-control">
+                  <label className="label"><span className="label-text">Format</span></label>
                   <select
-                    className="select select-bordered w-full bg-gray-700 text-amber-50"
+                    className="select select-bordered w-full"
                     value={selectedFormat}
-                    onChange={(e) =>
-                      setSelectedFormat(e.target.value as SocialFormat)
-                    }
+                    onChange={(e) => setSelectedFormat(e.target.value as SocialFormat)}
                   >
                     {Object.keys(socialFormats).map((format) => (
                       <option key={format} value={format}>
@@ -132,17 +117,27 @@ export default function Socialshare() {
                     ))}
                   </select>
                 </div>
+              )}
+            </div>
+          </div>
+        </div>
 
-                <div className="mt-6 relative">
-                  <h3 className="text-lg font-semibold mb-2 text-amber-50">
-                    Preview:
-                  </h3>
-                  <div className="flex justify-center">
-                    {isTransforming && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-base-100 bg-opacity-50 z-10">
-                        <span className="loading loading-spinner loading-lg"></span>
-                      </div>
-                    )}
+        <div className="lg:col-span-2">
+          <div className="card bg-base-100 border border-base-300 shadow-sm">
+            <div className="card-body">
+              <h2 className="card-title mb-2">Preview</h2>
+              {!uploadedImage ? (
+                <div className="h-72 sm:h-96 flex items-center justify-center text-base-content/60">
+                  Upload an image to see the preview
+                </div>
+              ) : (
+                <div className="relative overflow-hidden rounded-lg border border-base-300">
+                  {isTransforming && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-base-100/70 z-10">
+                      <span className="loading loading-spinner loading-lg"></span>
+                    </div>
+                  )}
+                  <div className="flex justify-center p-4 bg-base-200">
                     <CldImage
                       width={socialFormats[selectedFormat].width}
                       height={socialFormats[selectedFormat].height}
@@ -154,21 +149,17 @@ export default function Socialshare() {
                       gravity="auto"
                       ref={imageRef}
                       onLoad={() => setIsTransforming(false)}
-                      //used to stop the loading spinner once the image has been loaded and transformed.
                     />
                   </div>
                 </div>
+              )}
 
-                <div className="card-actions justify-end mt-6">
-                  <button
-                    className="btn btn-primary bg-purple-400 rounded-lg"
-                    onClick={handleDownload}
-                  >
-                    Download for {selectedFormat}
-                  </button>
-                </div>
+              <div className="card-actions justify-end mt-4">
+                <button className="btn btn-primary" onClick={handleDownload} disabled={!uploadedImage}>
+                  Download for {selectedFormat}
+                </button>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>

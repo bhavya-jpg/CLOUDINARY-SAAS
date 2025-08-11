@@ -47,9 +47,9 @@ export default function AppLayout({
         checked={sidebarOpen}
         onChange={() => setSidebarOpen(!sidebarOpen)}
       />
-      <div className="drawer-content flex flex-col">
+      <div className="drawer-content flex flex-col bg-neutral-950 text-neutral-100">
         {/* Navbar */}
-        <header className="w-full bg-base-200">
+        <header className="w-full bg-neutral-900 border-b border-neutral-800">
           <div className="navbar max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex-none lg:hidden">
               <label
@@ -61,7 +61,7 @@ export default function AppLayout({
             </div>
             <div className="flex-1">
               <Link href="/" onClick={handleLogoClick}>
-                <div className="btn btn-ghost normal-case text-2xl font-bold tracking-tight cursor-pointer">
+                <div className="btn btn-ghost normal-case text-2xl font-bold tracking-tight cursor-pointer text-neutral-100">
                   Cloudinary Showcase
                 </div>
               </Link>
@@ -70,7 +70,7 @@ export default function AppLayout({
               {user && (
                 <>
                   <div className="avatar">
-                    <div className="w-8 h-8 rounded-full">
+                    <div className="w-8 h-8 rounded-full ring ring-neutral-800">
                       <img
                         src={user.imageUrl}
                         alt={
@@ -102,23 +102,30 @@ export default function AppLayout({
       </div>
       <div className="drawer-side">
         <label htmlFor="sidebar-drawer" className="drawer-overlay"></label>
-        <aside className="bg-base-200 w-64 h-full flex flex-col">
+        <aside className="bg-neutral-900 border-r border-neutral-800 w-64 h-full flex flex-col text-neutral-100">
           <div className="flex items-center justify-center py-4">
             <ImageIcon className="w-10 h-10 text-primary" />
           </div>
-          <ul className="menu p-4 w-full text-base-content flex-grow">
+          <ul className="menu p-4 w-full text-neutral-100 flex-grow gap-1">
             {sidebarItems.map((item) => (
               <li key={item.href} className="mb-2">
                 <Link
                   href={item.href}
-                  className={`flex items-center space-x-4 px-4 py-2 rounded-lg ${
+                  aria-current={pathname === item.href ? "page" : undefined}
+                  className={`flex items-center gap-4 px-4 py-2 rounded-lg transition-colors font-medium ${
                     pathname === item.href
-                      ? "bg-primary text-white"
-                      : "hover:bg-base-300"
+                      ? "bg-violet-600 text-white shadow-sm"
+                      : "hover:bg-neutral-800 text-neutral-200"
                   }`}
                   onClick={() => setSidebarOpen(false)}
                 >
-                  <item.icon className="w-6 h-6" />
+                  <item.icon
+                    className={`w-6 h-6 ${
+                      pathname === item.href
+                        ? "text-white"
+                        : "text-neutral-300"
+                    }`}
+                  />
                   <span>{item.label}</span>
                 </Link>
               </li>
