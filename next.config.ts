@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['@clerk/nextjs', 'lucide-react'],
   },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals.push('@prisma/client');
+    }
+    return config;
+  },
 };
 
 export default nextConfig;
