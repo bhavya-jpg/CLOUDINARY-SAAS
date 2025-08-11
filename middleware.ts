@@ -9,7 +9,7 @@ const isPublicRoute = createRouteMatcher([
   "/oauth(.*)",
   "/oauth-callback(.*)",
 ]);
-const isPublicApiRoute = createRouteMatcher(["/api/videos", "/api/video-upload"]);
+const isPublicApiRoute = createRouteMatcher(["/api/videos", "/api/test-env"]);
 
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();

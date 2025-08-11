@@ -3,7 +3,18 @@ import { v2 as cloudinary } from "cloudinary";
 import { auth } from "@clerk/nextjs/server";
 import { PrismaClient } from "../../generated/prisma/index";
 
-const prisma = new PrismaClient();
+// Create a single Prisma client instance
+let prisma: PrismaClient;
+
+if (process.env.NODE_ENV === 'production') {
+  prisma = new PrismaClient();
+} else {
+  // In development, use a global variable to prevent multiple instances
+  if (!(global as { prisma?: PrismaClient }).prisma) {
+    (global as { prisma?: PrismaClient }).prisma = new PrismaClient();
+  }
+  prisma = (global as { prisma?: PrismaClient }).prisma!;
+}
 
 // Configuration
 cloudinary.config({
@@ -124,6 +135,18 @@ export async function POST(request: NextRequest) {
       publicId: result.public_id
     });
 
+    // Test database connection first
+    try {
+      await prisma.$connect();
+      console.log("Database connected successfully");
+    } catch (dbConnectError) {
+      console.error("Database connection failed:", dbConnectError);
+      return NextResponse.json({ 
+        error: "Database connection failed",
+        details: dbConnectError instanceof Error ? dbConnectError.message : "Unknown database error"
+      }, { status: 500 });
+    }
+
     // Save to database
     let video;
     try {
@@ -153,6 +176,8 @@ export async function POST(request: NextRequest) {
         error: "Failed to save video to database",
         details: dbError instanceof Error ? dbError.message : "Unknown database error"
       }, { status: 500 });
+    } finally {
+      await prisma.$disconnect();
     }
 
     return NextResponse.json({ 
@@ -189,8 +214,6 @@ export async function POST(request: NextRequest) {
       error: errorMessage,
       details: error instanceof Error ? error.message : "Unknown error"
     }, { status: statusCode });
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
