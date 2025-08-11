@@ -1,7 +1,5 @@
 import {NextResponse} from "next/server"
-import { PrismaClient } from "../../generated/prisma/index"
-
-const prisma = new PrismaClient()
+import { prisma } from "../../../lib/prisma"
 
 export async function GET(){
     try {
@@ -13,7 +11,5 @@ export async function GET(){
         return NextResponse.json({
             error:"Error fetching videos"
         },{status:500})
-    }finally{
-        await prisma.$disconnect()
     }
  }

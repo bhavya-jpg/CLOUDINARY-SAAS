@@ -1,20 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 import { auth } from "@clerk/nextjs/server";
-import { PrismaClient } from "../../generated/prisma/index";
-
-// Create a single Prisma client instance
-let prisma: PrismaClient;
-
-if (process.env.NODE_ENV === 'production') {
-  prisma = new PrismaClient();
-} else {
-  // In development, use a global variable to prevent multiple instances
-  if (!(global as { prisma?: PrismaClient }).prisma) {
-    (global as { prisma?: PrismaClient }).prisma = new PrismaClient();
-  }
-  prisma = (global as { prisma?: PrismaClient }).prisma!;
-}
+import { prisma } from "../../../lib/prisma";
 
 // Configuration
 cloudinary.config({
@@ -135,19 +122,7 @@ export async function POST(request: NextRequest) {
       publicId: result.public_id
     });
 
-    // Test database connection first
-    try {
-      await prisma.$connect();
-      console.log("Database connected successfully");
-    } catch (dbConnectError) {
-      console.error("Database connection failed:", dbConnectError);
-      return NextResponse.json({ 
-        error: "Database connection failed",
-        details: dbConnectError instanceof Error ? dbConnectError.message : "Unknown database error"
-      }, { status: 500 });
-    }
-
-    // Save to database
+    // Save to database with better error handling for Vercel
     let video;
     try {
       video = await prisma.video.create({
@@ -176,8 +151,6 @@ export async function POST(request: NextRequest) {
         error: "Failed to save video to database",
         details: dbError instanceof Error ? dbError.message : "Unknown database error"
       }, { status: 500 });
-    } finally {
-      await prisma.$disconnect();
     }
 
     return NextResponse.json({ 

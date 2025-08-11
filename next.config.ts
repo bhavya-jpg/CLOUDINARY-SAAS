@@ -16,6 +16,8 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
+  // Add Vercel-specific optimizations
+  output: 'standalone',
 };
 
 export default nextConfig;
