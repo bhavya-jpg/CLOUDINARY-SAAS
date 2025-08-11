@@ -17,10 +17,6 @@ interface CloudinaryUploadResult {
   bytes: number;
   duration?: number;
   secure_url?: string;
-  eager?: Array<{
-    secure_url: string;
-    [key: string]: unknown;
-  }>;
   [key: string]: unknown;
 }
 
@@ -48,12 +44,6 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-
-    console.log("Cloudinary config:", {
-      cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY ? "***" : "missing",
-      api_secret: process.env.CLOUDINARY_API_SECRET ? "***" : "missing"
-    });
 
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
@@ -90,82 +80,29 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Upload with AI-powered preview generation and smart compression
-    const result = await Promise.race([
-      new Promise<CloudinaryUploadResult>((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          {
-            resource_type: "video",
-            folder: "video-uploads",
-            // Smart compression during upload
-            transformation: [
-              {
-                quality: "auto:low",
-                fetch_format: "mp4",
-                video_codec: "auto",
-                bit_rate: "auto"
-              }
-            ],
-            // Generate compressed, preview, and thumbnail derivatives
-            eager: [
-              // Compressed streaming/download version
-              {
-                quality: "auto:low",
-                fetch_format: "mp4",
-                video_codec: "auto",
-                bit_rate: "auto",
-                audio_codec: "aac",
-                audio_quality: "low"
-              },
-              // Short preview (like hover preview)
-              {
-                quality: "auto:low",
-                fetch_format: "mp4",
-                video_codec: "auto",
-                effect: "preview:duration_10"
-              },
-              // Thumbnail image
-              {
-                fetch_format: "jpg",
-                crop: "fill",
-                gravity: "auto",
-                width: 400,
-                height: 225,
-                quality: "auto:low"
-              }
-            ],
-            eager_async: false,
-            // Generate AI-powered preview
-            eager_transformation: true
-          },
-          (error, result) => {
-            if (error) {
-              console.error("Cloudinary upload error:", error);
-              reject(error);
-            } else {
-              console.log("Cloudinary upload success with AI previews:", result);
-              console.log("Eager transformations:", result?.eager);
-              console.log("Result keys:", result ? Object.keys(result) : []);
-              resolve(result as CloudinaryUploadResult);
-            }
+    // Simple upload without complex transformations
+    const result = await new Promise<CloudinaryUploadResult>((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          resource_type: "video",
+          folder: "video-uploads",
+          quality: "auto:low",
+          fetch_format: "mp4"
+        },
+        (error, result) => {
+          if (error) {
+            console.error("Cloudinary upload error:", error);
+            reject(error);
+          } else {
+            console.log("Cloudinary upload success:", result);
+            resolve(result as CloudinaryUploadResult);
           }
-        );
-        uploadStream.end(buffer);
-      }),
-      new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error("Upload timeout after 120 seconds")), 120000)
-      )
-    ]);
+        }
+      );
+      uploadStream.end(buffer);
+    });
 
-    // Extract URLs from eager transformations (index-based)
-    const eagerResults = result?.eager || [];
-    const highQualityUrl = eagerResults[0]?.secure_url || null;
-    const aiPreviewUrl = eagerResults[1]?.secure_url || null;
-    const thumbnailUrl = eagerResults[2]?.secure_url || null;
-
-    console.log("Extracted URLs:", { aiPreviewUrl, thumbnailUrl, highQualityUrl });
-
-    // Calculate actual compression percentage
+    // Calculate compression percentage
     const originalSizeBytes = parseInt(originalSize);
     const compressedSizeBytes = result.bytes;
     
@@ -175,7 +112,6 @@ export async function POST(request: NextRequest) {
         ((originalSizeBytes - compressedSizeBytes) / originalSizeBytes) * 100
       );
     } else {
-      // If file got larger, show negative compression
       compressionPercentage = Math.round(
         ((compressedSizeBytes - originalSizeBytes) / originalSizeBytes) * 100
       );
@@ -188,7 +124,7 @@ export async function POST(request: NextRequest) {
       publicId: result.public_id
     });
 
-    // Save to database with error handling
+    // Save to database
     let video;
     try {
       video = await prisma.video.create({
@@ -200,17 +136,17 @@ export async function POST(request: NextRequest) {
           compressedSize: String(result.bytes),
           duration: result.duration || 0,
           userId: userId,
-          // AI-powered preview and quality URLs
-          aiPreviewUrl: aiPreviewUrl || null,
-          thumbnailUrl: thumbnailUrl || null,
-          highQualityUrl: highQualityUrl || null,
+          // Simplified URLs
+          aiPreviewUrl: null,
+          thumbnailUrl: null,
+          highQualityUrl: null,
           originalQualityUrl: result.secure_url || null,
-          keyMoments: [], // Will be populated by AI analysis
+          keyMoments: [],
           compressionRatio: compressedSizeBytes / originalSizeBytes,
-          previewDuration: 15 // AI preview duration
+          previewDuration: 15
         },
       });
-      console.log("Video saved to database with AI features:", video.id);
+      console.log("Video saved to database:", video.id);
     } catch (dbError) {
       console.error("Database error:", dbError);
       return NextResponse.json({ 
@@ -225,18 +161,12 @@ export async function POST(request: NextRequest) {
       compressionPercentage,
       originalSizeBytes,
       compressedSizeBytes,
-      message: "Video uploaded successfully with compression applied",
-      compressionInfo: {
-        originalSizeMB: (originalSizeBytes / (1024 * 1024)).toFixed(2),
-        compressedSizeMB: (compressedSizeBytes / (1024 * 1024)).toFixed(2),
-        savingsMB: ((originalSizeBytes - compressedSizeBytes) / (1024 * 1024)).toFixed(2)
-      }
+      message: "Video uploaded successfully"
     }, { status: 200 });
 
   } catch (error) {
     console.error("Upload video failed:", error);
     
-    // Handle specific error types
     let errorMessage = "Upload video failed";
     let statusCode = 500;
     

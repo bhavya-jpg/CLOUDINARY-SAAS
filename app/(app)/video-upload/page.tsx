@@ -46,11 +46,9 @@ function VideoUpload() {
         const originalMB = (originalSizeBytes / (1024 * 1024)).toFixed(2);
         const compressedMB = (compressedSizeBytes / (1024 * 1024)).toFixed(2);
         
-        alert(`🎉 Video uploaded successfully with AI features!\n\n` +
-              `📹 Smart Compression: ${compressionPercentage}%\n` +
-              `📊 Original: ${originalMB}MB → Compressed: ${compressedMB}MB\n` +
-              `🤖 AI Preview: Generated with key moments\n` +
-              `⚡ Multiple quality versions available\n\n` +
+        alert(`🎉 Video uploaded successfully!\n\n` +
+              `📹 Compression: ${compressionPercentage}%\n` +
+              `📊 Original: ${originalMB}MB → Compressed: ${compressedMB}MB\n\n` +
               `Redirecting to your video library...`);
         router.push("/home");
       }
