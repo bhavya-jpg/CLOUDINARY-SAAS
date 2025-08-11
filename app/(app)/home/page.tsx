@@ -3,13 +3,10 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import VideoCard from "@/component/VideoCard";
 import { Video } from "@/types";
-import { useRouter } from "next/navigation";
 
 function Home() {
-  const router = useRouter();
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const fetchVideos = useCallback(async () => {
     try {
@@ -21,7 +18,6 @@ function Home() {
       }
     } catch (error) {
       console.log(error);
-      setError("Failed to fetch videos");
     } finally {
       setLoading(false);
     }

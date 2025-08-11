@@ -42,7 +42,7 @@ function VideoUpload() {
       const response = await axios.post("/api/video-upload", formData);
       
       if (response.status === 200) {
-        const { compressionPercentage, originalSizeBytes, compressedSizeBytes, compressionInfo } = response.data;
+        const { compressionPercentage, originalSizeBytes, compressedSizeBytes } = response.data;
         const originalMB = (originalSizeBytes / (1024 * 1024)).toFixed(2);
         const compressedMB = (compressedSizeBytes / (1024 * 1024)).toFixed(2);
         
@@ -54,12 +54,12 @@ function VideoUpload() {
               `Redirecting to your video library...`);
         router.push("/home");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       let errorMessage = "Error uploading video. Please try again later.";
       
-      if (error.response?.data?.error) {
-        errorMessage = error.response.data.error;
-      } else if (error.message) {
+      if (error && typeof error === 'object' && 'response' in error && error.response && typeof error.response === 'object' && 'data' in error.response && error.response.data && typeof error.response.data === 'object' && 'error' in error.response.data) {
+        errorMessage = String(error.response.data.error);
+      } else if (error instanceof Error) {
         errorMessage = error.message;
       }
       

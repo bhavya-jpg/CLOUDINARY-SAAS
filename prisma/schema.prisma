@@ -25,7 +25,7 @@ model Video{
   duration Float
   userId String // Add userId to link videos to users
   createdAt DateTime @default(now())
-  updatedAt DateTime@updatedAt
+  updatedAt DateTime @updatedAt
   
   // AI-powered preview and quality options
   aiPreviewUrl String? // AI-generated preview with key moments

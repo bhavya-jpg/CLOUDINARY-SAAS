@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 import { auth } from "@clerk/nextjs/server";
-import { PrismaClient } from "../../generated/prisma";
+import { PrismaClient } from "../../generated/prisma/index";
 
 const prisma = new PrismaClient();
 
@@ -16,7 +16,12 @@ interface CloudinaryUploadResult {
   public_id: string;
   bytes: number;
   duration?: number;
-  [key: string]: any;
+  secure_url?: string;
+  eager?: Array<{
+    secure_url: string;
+    [key: string]: unknown;
+  }>;
+  [key: string]: unknown;
 }
 
 export async function POST(request: NextRequest) {
@@ -259,7 +264,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Test endpoint to check Cloudinary configuration
     const config = {
@@ -273,7 +278,7 @@ export async function GET(request: NextRequest) {
       config,
       timestamp: new Date().toISOString()
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Test failed" }, { status: 500 });
   }
 }

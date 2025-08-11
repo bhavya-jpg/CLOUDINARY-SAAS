@@ -5,7 +5,6 @@ export default function Page() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-neutral-950">
       <SignIn
         afterSignInUrl="/home"
-        signInFallbackRedirectUrl="/home"
       />
     </div>
   );
